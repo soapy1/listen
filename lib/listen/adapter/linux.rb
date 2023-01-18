@@ -32,6 +32,8 @@ module Listen
         raise ::Listen::Error::INotifyMaxWatchesExceeded, <<~EOS
           Unable to monitor directories for changes because iNotify max watches exceeded. See #{README_URL} .
         EOS
+      rescue Errno::EACCES => e
+        Listen.logger.warn "Unable able to watch file: #{e.message}"
       end
 
       def _run

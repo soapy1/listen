@@ -79,6 +79,33 @@ RSpec.describe Listen::Adapter::Linux do
         end
       end
 
+      describe 'inotify permission denied' do
+        let(:directories) { [Pathname.pwd] }
+        let(:adapter_options) { {} }
+
+        before do
+          fake_worker = double(:fake_worker_for_inotify_permission_denied)
+          allow(fake_worker).to receive(:watch).and_raise(Errno::EACCES)
+          allow(fake_worker).to receive(:close)
+
+          fake_notifier = double(:fake_notifier, new: fake_worker)
+          stub_const('INotify::Notifier', fake_notifier)
+
+          allow(config).to receive(:directories).and_return(directories)
+          allow(config).to receive(:adapter_options).and_return(adapter_options)
+          allow(config).to receive(:silencer).and_return(silencer)
+          allow(fake_worker).to receive(:close)
+        end
+
+        after do
+          subject.stop
+        end
+        
+        it 'does not raise an exception' do
+          subject.start
+        end
+      end
+
       # TODO: should probably be adapted to be more like adapter/base_spec.rb
       describe '_callback' do
         let(:directories) { [dir1] }
