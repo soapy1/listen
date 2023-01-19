@@ -16,7 +16,8 @@ module Listen
           :move,
           :close_write
         ],
-        wait_for_delay: 0.1
+        wait_for_delay: 0.1,
+        ignore_access_errors: false
       }.freeze
 
       private
@@ -33,7 +34,11 @@ module Listen
           Unable to monitor directories for changes because iNotify max watches exceeded. See #{README_URL} .
         EOS
       rescue Errno::EACCES => e
-        Listen.logger.warn "Unable able to watch file: #{e.message}"
+        if options.ignore_access_errors
+          Listen.logger.warn "Unable able to watch file: #{e.message}"
+        else
+          raise e
+        end
       end
 
       def _run

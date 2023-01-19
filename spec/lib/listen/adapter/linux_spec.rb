@@ -100,10 +100,15 @@ RSpec.describe Listen::Adapter::Linux do
         after do
           subject.stop
         end
-        
-        it 'does not raise an exception' do
-          subject.start
+
+        it 'raises an exception' do
+           expect { subject.start }.to raise_exception(Errno::EACCES)
         end
+
+        it 'does not raise an exception' do
+          allow(config).to receive(:adapter_options).and_return({ ignore_access_errors: true } )
+          subject.start
+       end
       end
 
       # TODO: should probably be adapted to be more like adapter/base_spec.rb
